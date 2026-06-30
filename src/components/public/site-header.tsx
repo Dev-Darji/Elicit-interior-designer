@@ -42,11 +42,15 @@ export function SiteHeader() {
         <div className="container-editorial flex h-20 items-center justify-between">
           <Link 
             to="/" 
-            className="font-serif text-xl sm:text-2xl tracking-[0.2em] uppercase flex items-center select-none font-semibold hover:opacity-90 transition-opacity"
+            className="flex items-center select-none group"
           >
-            <span>E</span>
-            <span className={`transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap inline-block ${
-              scrolled ? "max-w-0 opacity-0" : "max-w-[120px] opacity-100 ml-1"
+            {/* Circle Logo Mark */}
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-current font-serif text-lg font-bold transition-all duration-300">
+              E
+            </div>
+            {/* Sliding Brand Name */}
+            <span className={`transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap font-serif text-lg sm:text-xl tracking-[0.2em] uppercase font-semibold ${
+              scrolled ? "max-w-0 opacity-0 ml-0" : "max-w-[120px] opacity-100 ml-3"
             }`}>
               licit
             </span>
