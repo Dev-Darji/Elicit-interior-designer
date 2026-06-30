@@ -15,7 +15,7 @@ export default defineConfig({
   vite: {
     envPrefix: ["VITE_", "NEXT_PUBLIC_"],
     ssr: {
-      external: ["vinxi/http"],
+      external: ["vinxi/http", "@supabase/ssr", "@supabase/supabase-js"],
     },
   },
 });
