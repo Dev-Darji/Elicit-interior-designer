@@ -105,8 +105,70 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <style dangerouslySetInnerHTML={{ __html: `
+          #initial-loader {
+            position: fixed;
+            inset: 0;
+            background-color: #f5f5f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+            opacity: 1;
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .loader-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+          }
+          .loader-logo {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 3.5rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            letter-spacing: 0.1em;
+            animation: loader-pulse 1.6s ease-in-out infinite;
+          }
+          .loader-line {
+            width: 60px;
+            height: 1px;
+            background-color: rgba(26, 26, 26, 0.1);
+            position: relative;
+            overflow: hidden;
+          }
+          .loader-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            background-color: #1a1a1a;
+            animation: loader-bar 1.2s cubic-bezier(0.65, 0.05, 0.36, 1) infinite;
+          }
+          @keyframes loader-pulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+          }
+          @keyframes loader-bar {
+            0% { left: -50%; }
+            100% { left: 100%; }
+          }
+          #initial-loader.fade-out {
+            opacity: 0;
+            pointer-events: none;
+          }
+        `}} />
       </head>
       <body>
+        <div id="initial-loader">
+          <div className="loader-content">
+            <div className="loader-logo">E</div>
+            <div className="loader-line"></div>
+          </div>
+        </div>
         {children}
         <Scripts />
       </body>
@@ -116,6 +178,19 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    // Fade out and remove initial server-rendered loader after hydration
+    const loader = document.getElementById("initial-loader");
+    if (loader) {
+      loader.classList.add("fade-out");
+      const timer = setTimeout(() => {
+        loader.remove();
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
