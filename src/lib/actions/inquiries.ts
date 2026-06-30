@@ -37,9 +37,12 @@ export const submitInquiry = createServerFn({ method: 'POST' })
       console.log("Supabase not configured. Mocking inquiry submission:", data)
     }
 
+    const safeProcessEnv = (key: string) => 
+      typeof process !== 'undefined' && process.env ? process.env[key] || '' : '';
+
     // 2. Send email via Resend if RESEND_API_KEY is present
     const resendApiKey = 
-      process.env.RESEND_API_KEY || 
+      safeProcessEnv('RESEND_API_KEY') || 
       import.meta.env.VITE_RESEND_API_KEY || 
       import.meta.env.RESEND_API_KEY || 
       '';
@@ -49,7 +52,7 @@ export const submitInquiry = createServerFn({ method: 'POST' })
         const resend = new Resend(resendApiKey)
         // Get studio notification email
         const toEmail = 
-          process.env.NOTIFICATIONS_EMAIL || 
+          safeProcessEnv('NOTIFICATIONS_EMAIL') || 
           import.meta.env.VITE_NOTIFICATIONS_EMAIL || 
           'studio@elicitdesign.com';
         

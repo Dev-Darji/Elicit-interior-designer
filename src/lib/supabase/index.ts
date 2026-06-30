@@ -11,12 +11,15 @@ export const getSupabase = () => {
 }
 
 
+const safeProcessEnv = (key: string) => 
+  typeof process !== 'undefined' && process.env ? process.env[key] || '' : '';
+
 export const isSupabaseConfigured = () => {
   const url = 
     import.meta.env.VITE_SUPABASE_URL || 
     import.meta.env.NEXT_PUBLIC_SUPABASE_URL || 
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 
-    process.env.VITE_SUPABASE_URL || 
+    safeProcessEnv('NEXT_PUBLIC_SUPABASE_URL') || 
+    safeProcessEnv('VITE_SUPABASE_URL') || 
     '';
   return url && url !== 'your_supabase_project_url' && url.trim() !== '';
 }

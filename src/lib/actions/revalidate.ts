@@ -7,8 +7,11 @@ export const revalidatePages = createServerFn({ method: "POST" })
     
     // Webhook/Revalidation Hook execution
     // If deploying on Netlify or Vercel, we can fetch their cache tag purge or build webhook URL:
+    const safeProcessEnv = (key: string) => 
+      typeof process !== 'undefined' && process.env ? process.env[key] || '' : '';
+
     const buildHookUrl = 
-      process.env.BUILD_HOOK_URL || 
+      safeProcessEnv('BUILD_HOOK_URL') || 
       import.meta.env.VITE_BUILD_HOOK_URL || 
       '';
       
