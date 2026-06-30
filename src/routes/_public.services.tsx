@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { getMockServices } from "@/lib/mock-data/services";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export const Route = createFileRoute("/_public/services")({
   loader: async () => {
@@ -70,47 +71,65 @@ function ServicesPage() {
   return (
     <>
       <section className="pt-40 pb-16 border-b border-border">
-        <div className="container-editorial max-w-3xl">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">What We Do</p>
-          <h1 className="mt-6 font-serif text-5xl md:text-7xl">A full studio service.</h1>
-          <p className="mt-6 text-muted-foreground">From a single room of styling to a complete turnkey delivery — we work at every scale of an interior project.</p>
-        </div>
+        <ScrollReveal variant="fade-up" duration={1000}>
+          <div className="container-editorial max-w-3xl">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">What We Do</p>
+            <h1 className="mt-6 font-serif text-5xl md:text-7xl">A full studio service.</h1>
+            <p className="mt-6 text-muted-foreground">From a single room of styling to a complete turnkey delivery — we work at every scale of an interior project.</p>
+          </div>
+        </ScrollReveal>
       </section>
 
-      {services.map((s, i) => (
-        <section key={s.id} className={`section-y border-b border-border ${i % 2 === 1 ? "bg-card" : ""}`}>
-          <div className={`container-editorial grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""}`}>
-            <div className="relative overflow-hidden h-[560px] bg-muted">
-              <img src={s.image} alt={s.title} className="h-full w-full object-cover" />
+      {services.map((s, i) => {
+        const isOdd = i % 2 === 1;
+        return (
+          <section key={s.id} className={`section-y border-b border-border overflow-hidden ${isOdd ? "bg-card" : ""}`}>
+            <div className={`container-editorial grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${isOdd ? "lg:[&>*:first-child]:order-2" : ""}`}>
+              <ScrollReveal 
+                variant={isOdd ? "fade-left" : "fade-right"} 
+                duration={1000}
+              >
+                <div className="relative overflow-hidden h-[560px] bg-muted w-full">
+                  <img src={s.image} alt={s.title} className="h-full w-full object-cover" />
+                </div>
+              </ScrollReveal>
+              <ScrollReveal 
+                variant="fade-up" 
+                delay={200} 
+                duration={1000}
+              >
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-accent">{`0${i + 1}`}</p>
+                  <h2 className="mt-4 font-serif text-4xl md:text-5xl">{s.title}</h2>
+                  <p className="mt-6 leading-relaxed text-muted-foreground">{s.description}</p>
+                  {s.deliverables && s.deliverables.length > 0 && (
+                    <ul className="mt-8 space-y-3 border-t border-border pt-6">
+                      {s.deliverables.map((d: string) => (
+                        <li key={d} className="flex gap-3 text-sm">
+                          <span className="text-accent">—</span>
+                          <span>{d}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <Link to="/contact" className="mt-10 inline-flex items-center gap-3 text-xs uppercase tracking-[0.2em] link-underline">
+                    Enquire about this service <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </ScrollReveal>
             </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-accent">{`0${i + 1}`}</p>
-              <h2 className="mt-4 font-serif text-4xl md:text-5xl">{s.title}</h2>
-              <p className="mt-6 leading-relaxed text-muted-foreground">{s.description}</p>
-              {s.deliverables && s.deliverables.length > 0 && (
-                <ul className="mt-8 space-y-3 border-t border-border pt-6">
-                  {s.deliverables.map((d: string) => (
-                    <li key={d} className="flex gap-3 text-sm">
-                      <span className="text-accent">—</span>
-                      <span>{d}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Link to="/contact" className="mt-10 inline-flex items-center gap-3 text-xs uppercase tracking-[0.2em] link-underline">
-                Enquire about this service <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      ))}
+          </section>
+        );
+      })}
 
       <section className="bg-charcoal text-cream">
         <div className="container-editorial py-24 text-center">
-          <h2 className="font-serif text-3xl md:text-5xl max-w-2xl mx-auto">Not sure which service you need? Let's talk.</h2>
-          <Link to="/contact" className="mt-10 inline-flex items-center gap-3 border border-cream px-8 py-4 text-xs uppercase tracking-[0.2em] hover:bg-cream hover:text-charcoal transition-colors">
-            Start a Conversation <ArrowRight className="h-4 w-4" />
-          </Link>
+          <ScrollReveal variant="scale-up" duration={1000}>
+            <h2 className="font-serif text-3xl md:text-5xl max-w-2xl mx-auto">Not sure which service you need? Let's talk.</h2>
+            <Link to="/contact" className="mt-10 inline-flex items-center gap-3 border border-cream px-8 py-4 text-xs uppercase tracking-[0.2em] hover:bg-cream hover:text-charcoal transition-colors">
+              Start a Conversation <ArrowRight className="h-4 w-4" />
+            </Link>
+          </ScrollReveal>
         </div>
       </section>
     </>

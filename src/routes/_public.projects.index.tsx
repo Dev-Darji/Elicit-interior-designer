@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { getMockProjects, type ProjectCategory } from "@/lib/mock-data/projects";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export const Route = createFileRoute("/_public/projects/")({
   loader: async () => {
@@ -64,13 +65,15 @@ function ProjectsPage() {
   return (
     <>
       <section className="pt-40 pb-16 border-b border-border">
-        <div className="container-editorial">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            <Link to="/" className="link-underline">Home</Link> / Projects
-          </p>
-          <h1 className="mt-6 font-serif text-5xl md:text-7xl">Our Work</h1>
-          <p className="mt-6 max-w-2xl text-muted-foreground">A small, considered selection of recent projects across residences, hospitality and commercial spaces.</p>
-        </div>
+        <ScrollReveal variant="fade-up" duration={1000}>
+          <div className="container-editorial">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              <Link to="/" className="link-underline">Home</Link> / Projects
+            </p>
+            <h1 className="mt-6 font-serif text-5xl md:text-7xl">Our Work</h1>
+            <p className="mt-6 max-w-2xl text-muted-foreground">A small, considered selection of recent projects across residences, hospitality and commercial spaces.</p>
+          </div>
+        </ScrollReveal>
       </section>
 
       <section className="sticky top-20 z-30 bg-background/90 backdrop-blur border-b border-border">
@@ -93,23 +96,30 @@ function ProjectsPage() {
         <div className="container-editorial">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-16">
             {projects.map((p, i) => (
-              <Link
+              <ScrollReveal
                 key={p.id}
-                to="/projects/$slug"
-                params={{ slug: p.slug }}
-                className={`group ${i % 5 === 0 ? "lg:col-span-2" : ""}`}
+                variant="fade-up"
+                delay={(i % 3) * 150}
+                duration={1000}
+                className={i % 5 === 0 ? "lg:col-span-2" : ""}
               >
-                <div className={`relative overflow-hidden bg-muted ${i % 5 === 0 ? "h-[560px]" : "h-[440px]"}`}>
-                  <img src={p.cover} alt={p.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                </div>
-                <div className="mt-5 flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-serif text-2xl">{p.title}</h3>
-                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">{p.category} · {p.location}</p>
+                <Link
+                  to="/projects/$slug"
+                  params={{ slug: p.slug }}
+                  className="group block w-full"
+                >
+                  <div className={`relative overflow-hidden bg-muted ${i % 5 === 0 ? "h-[560px]" : "h-[440px]"}`}>
+                    <img src={p.cover} alt={p.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   </div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground shrink-0">{p.year}</p>
-                </div>
-              </Link>
+                  <div className="mt-5 flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-serif text-2xl">{p.title}</h3>
+                      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">{p.category} · {p.location}</p>
+                    </div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground shrink-0">{p.year}</p>
+                  </div>
+                </Link>
+              </ScrollReveal>
             ))}
           </div>
 

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { getMockPosts } from "@/lib/mock-data/blog-posts";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export const Route = createFileRoute("/_public/journal/")({
   loader: async () => {
@@ -62,32 +63,36 @@ function JournalPage() {
   return (
     <>
       <section className="pt-40 pb-12 border-b border-border">
-        <div className="container-editorial">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Journal</p>
-          <h1 className="mt-6 font-serif text-5xl md:text-7xl">Notes from the studio.</h1>
-        </div>
+        <ScrollReveal variant="fade-up" duration={1000}>
+          <div className="container-editorial">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Journal</p>
+            <h1 className="mt-6 font-serif text-5xl md:text-7xl">Notes from the studio.</h1>
+          </div>
+        </ScrollReveal>
       </section>
 
       {hero && (
         <section className="section-y border-b border-border">
           <div className="container-editorial">
-            <Link to="/journal/$slug" params={{ slug: hero.slug }} className="group grid lg:grid-cols-2 gap-12 items-center">
-              <div className="relative overflow-hidden h-[560px] bg-muted">
-                <img src={hero.cover} alt={hero.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-accent">{hero.category} · Featured</p>
-                <h2 className="mt-6 font-serif text-4xl md:text-5xl leading-[1.1]">{hero.title}</h2>
-                <p className="mt-6 text-muted-foreground leading-relaxed">{hero.excerpt}</p>
-                <div className="mt-8 flex items-center gap-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  <span>{hero.author}</span>
-                  <span>{hero.readTime}</span>
+            <ScrollReveal variant="fade-up" duration={1000}>
+              <Link to="/journal/$slug" params={{ slug: hero.slug }} className="group grid lg:grid-cols-2 gap-12 items-center">
+                <div className="relative overflow-hidden h-[560px] bg-muted w-full">
+                  <img src={hero.cover} alt={hero.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 </div>
-                <span className="mt-8 inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] link-underline">
-                  Read Article <ArrowRight className="h-4 w-4" />
-                </span>
-              </div>
-            </Link>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-accent">{hero.category} · Featured</p>
+                  <h2 className="mt-6 font-serif text-4xl md:text-5xl leading-[1.1]">{hero.title}</h2>
+                  <p className="mt-6 text-muted-foreground leading-relaxed">{hero.excerpt}</p>
+                  <div className="mt-8 flex items-center gap-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    <span>{hero.author}</span>
+                    <span>{hero.readTime}</span>
+                  </div>
+                  <span className="mt-8 inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] link-underline">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </Link>
+            </ScrollReveal>
           </div>
         </section>
       )}
@@ -104,17 +109,24 @@ function JournalPage() {
 
       <section className="section-y">
         <div className="container-editorial grid md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-16">
-          {rest.map((p) => (
-            <Link key={p.id} to="/journal/$slug" params={{ slug: p.slug }} className="group">
-              <div className="relative overflow-hidden h-[360px] bg-muted">
-                <img src={p.cover} alt={p.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              </div>
-              <p className="mt-5 text-xs uppercase tracking-[0.2em] text-accent">{p.category}</p>
-              <h3 className="mt-3 font-serif text-2xl leading-tight">{p.title}</h3>
-              <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{p.excerpt}</p>
-              <p className="mt-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">{p.author} · {p.readTime}</p>
-            </Link>
-          ))}
+            {rest.map((p, idx) => (
+              <ScrollReveal 
+                key={p.id} 
+                variant="fade-up" 
+                delay={(idx % 3) * 150} 
+                duration={800}
+              >
+                <Link to="/journal/$slug" params={{ slug: p.slug }} className="group block w-full">
+                  <div className="relative overflow-hidden h-[360px] bg-muted w-full">
+                    <img src={p.cover} alt={p.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  </div>
+                  <p className="mt-5 text-xs uppercase tracking-[0.2em] text-accent">{p.category}</p>
+                  <h3 className="mt-3 font-serif text-2xl leading-tight">{p.title}</h3>
+                  <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{p.excerpt}</p>
+                  <p className="mt-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">{p.author} · {p.readTime}</p>
+                </Link>
+              </ScrollReveal>
+            ))}
         </div>
       </section>
     </>

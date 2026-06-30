@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ArrowRight, Star } from "lucide-react";
 import * as Icons from "lucide-react";
 import { getMockProjects } from "@/lib/mock-data/projects";
@@ -8,6 +8,7 @@ import { getMockTestimonials } from "@/lib/mock-data/testimonials";
 import { getMockSettings } from "@/lib/mock-data/site-settings";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { getSiteSettings } from "@/lib/supabase/settings";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export const Route = createFileRoute("/_public/")({
   loader: async () => {
@@ -148,6 +149,44 @@ const steps = [
   { n: "05", title: "Handover", body: "A beautifully finished space, snagged and styled, ready to live in." },
 ];
 
+function AnimatedStat({ value, label, index }: { value: string; label: string; index: number }) {
+  const [visible, setVisible] = useState(false);
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let observer: IntersectionObserver;
+    if (elementRef.current) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (entry.isIntersecting) {
+            setVisible(true);
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.1 }
+      );
+      observer.observe(elementRef.current);
+    }
+    return () => {
+      if (observer) observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <div 
+      ref={elementRef} 
+      className={`transition-all duration-1000 ease-out transform ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      }`}
+      style={{ transitionDelay: `${index * 150}ms` }}
+    >
+      <p className="font-serif text-5xl md:text-6xl text-foreground">{value}</p>
+      <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
 function HomePage() {
   const { settings, projects, services, testimonials } = Route.useLoaderData();
 
@@ -262,11 +301,8 @@ function HomePage() {
       {/* Stats */}
       <section className="border-b border-border">
         <div className="container-editorial py-16 grid grid-cols-2 md:grid-cols-4 gap-10">
-          {settings.homepage.stats.map((s) => (
-            <div key={s.label}>
-              <p className="font-serif text-5xl md:text-6xl text-foreground">{s.value}</p>
-              <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">{s.label}</p>
-            </div>
+          {settings.homepage.stats.map((s, idx) => (
+            <AnimatedStat key={s.label} value={s.value} label={s.label} index={idx} />
           ))}
         </div>
       </section>
@@ -274,15 +310,17 @@ function HomePage() {
       {/* Featured projects */}
       <section className="section-y">
         <div className="container-editorial">
-          <div className="flex items-end justify-between mb-16 gap-8">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-accent">Selected Work</p>
-              <h2 className="mt-4 font-serif text-4xl md:text-5xl">Recent Projects</h2>
+          <ScrollReveal variant="fade-up">
+            <div className="flex items-end justify-between mb-16 gap-8">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-accent">Selected Work</p>
+                <h2 className="mt-4 font-serif text-4xl md:text-5xl">Recent Projects</h2>
+              </div>
+              <Link to="/projects" className="hidden md:inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] link-underline">
+                All Projects <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-            <Link to="/projects" className="hidden md:inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] link-underline">
-              All Projects <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
             {projects.map((p, i) => {
@@ -296,22 +334,29 @@ function HomePage() {
               ][i] || "md:col-span-2";
               const height = i === 0 ? "h-[640px]" : i === 5 ? "h-[480px]" : "h-[320px]";
               return (
-                <Link
-                  key={p.id}
-                  to="/projects/$slug"
-                  params={{ slug: p.slug }}
-                  className={`group relative overflow-hidden bg-muted ${span} ${height}`}
+                <ScrollReveal 
+                  key={p.id} 
+                  variant="fade-up" 
+                  delay={(i % 3) * 150} 
+                  duration={1000}
+                  className={span}
                 >
-                  <img src={p.cover} alt={p.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-90" />
-                  <div className="absolute inset-x-0 bottom-0 p-6 text-cream">
-                    <p className="text-[10px] uppercase tracking-[0.25em] opacity-80">{p.category}</p>
-                    <h3 className="mt-2 font-serif text-2xl md:text-3xl">{p.title}</h3>
-                  </div>
-                  <span className="absolute right-6 top-6 inline-flex items-center gap-2 text-cream text-[10px] uppercase tracking-[0.25em] opacity-0 group-hover:opacity-100 transition-opacity">
-                    View Project <ArrowRight className="h-3 w-3" />
-                  </span>
-                </Link>
+                  <Link
+                    to="/projects/$slug"
+                    params={{ slug: p.slug }}
+                    className={`group relative block overflow-hidden bg-muted w-full ${height}`}
+                  >
+                    <img src={p.cover} alt={p.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-90" />
+                    <div className="absolute inset-x-0 bottom-0 p-6 text-cream">
+                      <p className="text-[10px] uppercase tracking-[0.25em] opacity-80">{p.category}</p>
+                      <h3 className="mt-2 font-serif text-2xl md:text-3xl">{p.title}</h3>
+                    </div>
+                    <span className="absolute right-6 top-6 inline-flex items-center gap-2 text-cream text-[10px] uppercase tracking-[0.25em] opacity-0 group-hover:opacity-100 transition-opacity">
+                      View Project <ArrowRight className="h-3 w-3" />
+                    </span>
+                  </Link>
+                </ScrollReveal>
               );
             })}
           </div>
@@ -321,19 +366,29 @@ function HomePage() {
       {/* Services */}
       <section className="section-y bg-card border-y border-border">
         <div className="container-editorial">
-          <div className="max-w-2xl mb-16">
-            <p className="text-xs uppercase tracking-[0.3em] text-accent">What We Do</p>
-            <h2 className="mt-4 font-serif text-4xl md:text-5xl">A full studio service, from first sketch to final handover.</h2>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="max-w-2xl mb-16">
+              <p className="text-xs uppercase tracking-[0.3em] text-accent">What We Do</p>
+              <h2 className="mt-4 font-serif text-4xl md:text-5xl">A full studio service, from first sketch to final handover.</h2>
+            </div>
+          </ScrollReveal>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
-            {services.map((s) => {
+            {services.map((s, idx) => {
               const Icon = (Icons as any)[s.iconName || 'Sparkles'] || Icons.Sparkles;
               return (
-                <div key={s.id} className="bg-card p-10 group">
-                  <Icon className="h-7 w-7 text-accent" strokeWidth={1.25} />
-                  <h3 className="mt-8 font-serif text-2xl">{s.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.short}</p>
-                </div>
+                <ScrollReveal 
+                  key={s.id} 
+                  variant="fade-up" 
+                  delay={(idx % 3) * 150} 
+                  duration={800}
+                  className="bg-card"
+                >
+                  <div className="p-10 group h-full">
+                    <Icon className="h-7 w-7 text-accent" strokeWidth={1.25} />
+                    <h3 className="mt-8 font-serif text-2xl">{s.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.short}</p>
+                  </div>
+                </ScrollReveal>
               );
             })}
           </div>
@@ -343,36 +398,51 @@ function HomePage() {
       {/* Process */}
       <section className="section-y">
         <div className="container-editorial">
-          <div className="max-w-2xl mb-16">
-            <p className="text-xs uppercase tracking-[0.3em] text-accent">Our Process</p>
-            <h2 className="mt-4 font-serif text-4xl md:text-5xl">Five stages, one continuous conversation.</h2>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="max-w-2xl mb-16">
+              <p className="text-xs uppercase tracking-[0.3em] text-accent">Our Process</p>
+              <h2 className="mt-4 font-serif text-4xl md:text-5xl">Five stages, one continuous conversation.</h2>
+            </div>
+          </ScrollReveal>
           <div className="grid md:grid-cols-5 gap-8 md:gap-4">
-            {steps.map((s) => (
-              <div key={s.n} className="relative">
-                <p className="font-serif text-5xl text-accent/80">{s.n}</p>
-                <div className="mt-4 h-px bg-border" />
-                <h3 className="mt-4 font-serif text-xl">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
-              </div>
+            {steps.map((s, idx) => (
+              <ScrollReveal 
+                key={s.n} 
+                variant="fade-up" 
+                delay={idx * 150} 
+                duration={1000}
+              >
+                <div className="relative">
+                  <p className="font-serif text-5xl text-accent/80">{s.n}</p>
+                  <div className="mt-4 h-px bg-border" />
+                  <h3 className="mt-4 font-serif text-xl">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+                </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials carousel */}
-      {testimonials.length > 0 && <TestimonialsCarousel items={testimonials} />}
+      {testimonials.length > 0 && (
+        <ScrollReveal variant="fade-up" duration={1200}>
+          <TestimonialsCarousel items={testimonials} />
+        </ScrollReveal>
+      )}
 
       {/* CTA */}
       <section className="relative">
         <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=2400&q=80" alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-charcoal/70" />
         <div className="relative container-editorial py-32 text-cream text-center">
-          <h2 className="font-serif text-4xl md:text-6xl max-w-3xl mx-auto leading-tight">Start your project today.</h2>
-          <p className="mt-6 max-w-xl mx-auto opacity-80">We take on a small number of projects each year, residential and commercial. Tell us what you have in mind.</p>
-          <Link to="/contact" className="mt-10 inline-flex items-center gap-3 border border-cream px-8 py-4 text-xs uppercase tracking-[0.2em] hover:bg-cream hover:text-charcoal transition-colors">
-            Begin the Conversation <ArrowRight className="h-4 w-4" />
-          </Link>
+          <ScrollReveal variant="scale-up" duration={1200}>
+            <h2 className="font-serif text-4xl md:text-6xl max-w-3xl mx-auto leading-tight">Start your project today.</h2>
+            <p className="mt-6 max-w-xl mx-auto opacity-80">We take on a small number of projects each year, residential and commercial. Tell us what you have in mind.</p>
+            <Link to="/contact" className="mt-10 inline-flex items-center gap-3 border border-cream px-8 py-4 text-xs uppercase tracking-[0.2em] hover:bg-cream hover:text-charcoal transition-colors">
+              Begin the Conversation <ArrowRight className="h-4 w-4" />
+            </Link>
+          </ScrollReveal>
         </div>
       </section>
     </>

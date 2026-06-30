@@ -143,9 +143,10 @@ export function ProjectForm({ initial, mode }: { initial?: any; mode: "create" |
       }
       
       navigate({ to: "/admin/projects" });
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      toast.error("An error occurred while saving the project.", { id: toastId });
+      const errMsg = e?.message || e?.details || JSON.stringify(e);
+      toast.error(`Error saving project: ${errMsg}`, { id: toastId, duration: 8000 });
     } finally {
       setSubmitting(false);
     }
@@ -349,8 +350,9 @@ export function ImageDropzone({ label, value, onChange, bucket }: { label: strin
       const url = await uploadImage(file, bucket);
       onChange(url);
       toast.success("Image uploaded successfully!", { id: toastId });
-    } catch (err) {
-      toast.error("Upload failed.", { id: toastId });
+    } catch (err: any) {
+      const errorMsg = err?.message || "Upload failed.";
+      toast.error(errorMsg, { id: toastId, duration: 6000 });
       console.error(err);
     } finally {
       setUploading(false);
