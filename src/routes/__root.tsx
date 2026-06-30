@@ -123,18 +123,12 @@ function RootShell({ children }: { children: ReactNode }) {
             align-items: center;
             gap: 20px;
           }
-          .loader-logo-circle {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            border: 2px solid #1a1a1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+          .loader-logo {
             font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 2.5rem;
-            font-weight: 700;
+            font-size: 3.5rem;
+            font-weight: 500;
             color: #1a1a1a;
+            letter-spacing: 0.1em;
             animation: loader-pulse 1.6s ease-in-out infinite;
           }
           .loader-line {
@@ -171,7 +165,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <body>
         <div id="initial-loader">
           <div className="loader-content">
-            <div className="loader-logo-circle">E</div>
+            <div className="loader-logo">E</div>
             <div className="loader-line"></div>
           </div>
         </div>
