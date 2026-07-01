@@ -153,6 +153,7 @@ function ProjectsAdmin() {
             <thead className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
               <tr className="border-b border-border">
                 <th className="w-10 px-4 py-3"></th>
+                <th className="w-20 text-left px-6 py-3 font-normal">Cover</th>
                 <th className="text-left px-6 py-3 font-normal">Title</th>
                 <th className="text-left px-6 py-3 font-normal">Category</th>
                 <th className="text-left px-6 py-3 font-normal">Status</th>
@@ -176,19 +177,23 @@ function ProjectsAdmin() {
                               <GripVertical className="h-4 w-4" />
                             </span>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-4">
-                              <img src={p.cover} alt="" className="h-12 w-16 object-cover bg-muted" />
-                              <div>
-                                <p className="font-serif text-base">{p.title}</p>
-                                <p className="text-xs text-muted-foreground">/{p.slug}</p>
-                              </div>
+                          <td className="px-6 py-4 align-middle">
+                            {p.cover ? (
+                              <img src={p.cover} alt="" className="h-10 w-14 object-cover bg-muted border border-border/40" />
+                            ) : (
+                              <div className="h-10 w-14 bg-muted border border-border/40 flex items-center justify-center text-[10px] text-muted-foreground">No Cover</div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 align-middle">
+                            <div>
+                              <p className="font-serif text-base">{p.title}</p>
+                              <p className="text-xs text-muted-foreground">/{p.slug}</p>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-muted-foreground">{p.category}</td>
-                          <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
-                          <td className="px-6 py-4 text-muted-foreground">{p.createdAt}</td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4 text-muted-foreground align-middle">{p.category}</td>
+                          <td className="px-6 py-4 align-middle"><StatusBadge status={p.status} /></td>
+                          <td className="px-6 py-4 text-muted-foreground align-middle">{p.createdAt}</td>
+                          <td className="px-6 py-4 align-middle">
                             <div className="flex items-center justify-end gap-2">
                               <Link to="/admin/projects/$id/edit" params={{ id: p.id }} className="p-2 hover:bg-muted" aria-label="Edit"><Pencil className="h-4 w-4" /></Link>
                               <button onClick={() => setConfirmId(p.id)} className="p-2 hover:bg-muted text-destructive" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
@@ -201,7 +206,7 @@ function ProjectsAdmin() {
                   {provided.placeholder}
                   {items.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">No projects found.</td>
+                      <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">No projects found.</td>
                     </tr>
                   )}
                 </tbody>
