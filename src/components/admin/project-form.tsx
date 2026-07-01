@@ -24,45 +24,69 @@ export function ProjectForm({ initial, mode }: { initial?: any; mode: "create" |
   const [category, setCategory] = useState(initial?.category ?? "Residential");
   const [cover, setCover] = useState<string | undefined>(initial?.cover);
   const [gallery, setGallery] = useState<string[]>(initial?.gallery ?? []);
-  
+
   const [description, setDescription] = useState(initial?.description ?? "");
   const [bodyJson, setBodyJson] = useState<any>(initial?.body_json ?? null);
-  
+
   const [clientType, setClientType] = useState(initial?.clientType ?? "");
   const [location, setLocation] = useState(initial?.location ?? "");
   const [year, setYear] = useState(initial?.year ? String(initial.year) : "");
   const [area, setArea] = useState(initial?.area ?? "");
-  
+
   const [selectedServices, setSelectedServices] = useState<string[]>(initial?.services ?? []);
   const [metaTitle, setMetaTitle] = useState(initial?.meta_title ?? "");
   const [metaDescription, setMetaDescription] = useState(initial?.meta_description ?? "");
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const toggleService = (srvTitle: string) => {
-    setSelectedServices(prev => 
+    setSelectedServices(prev =>
       prev.includes(srvTitle) ? prev.filter(t => t !== srvTitle) : [...prev, srvTitle]
     );
   };
 
   const handleSave = async (targetStatus?: "Draft" | "Published") => {
     const finalStatus = targetStatus ?? (status as "Draft" | "Published");
-    
+
+    // Perform validation
+    const newErrors: Record<string, string> = {};
     if (!title.trim()) {
-      toast.error("Project title is required");
-      return;
+      newErrors.title = "Project title is required";
     }
     if (!slug.trim()) {
-      toast.error("Project slug is required");
+      newErrors.slug = "Project slug is required";
+    }
+    if (!cover) {
+      newErrors.cover = "Cover image is required";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Find first error and scroll to it
+      const firstErrorKey = Object.keys(newErrors)[0];
+      setTimeout(() => {
+        const element = document.getElementById(firstErrorKey);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          const input = element.tagName === "INPUT" || element.tagName === "TEXTAREA"
+            ? element
+            : element.querySelector("input, textarea, select, button");
+          if (input) {
+            (input as HTMLElement).focus();
+          }
+        }
+      }, 50);
       return;
     }
 
+    setErrors({});
     setSubmitting(true);
     const toastId = toast.loading(mode === "create" ? "Creating project..." : "Saving project changes...");
 
     try {
       if (isSupabaseConfigured()) {
         const supabase = getSupabase();
-        
+
         const projectData = {
           title,
           slug,
@@ -133,15 +157,15 @@ export function ProjectForm({ initial, mode }: { initial?: any; mode: "create" |
             if (imgError) throw imgError;
           }
         }
-        
+
         toast.success(`Project ${finalStatus === "Published" ? "published" : "saved as draft"} successfully!`, { id: toastId });
-        
+
         // Trigger On-Demand ISR revalidation
         revalidatePages({ data: ["/", "/projects", `/projects/${slug}`] }).catch(console.error);
       } else {
         toast.success(`Mock Success: Project saved locally as ${finalStatus}`, { id: toastId });
       }
-      
+
       navigate({ to: "/admin/projects" });
     } catch (e: any) {
       console.error(e);
@@ -154,140 +178,131 @@ export function ProjectForm({ initial, mode }: { initial?: any; mode: "create" |
 
   return (
     <div>
-      <AdminPageHeader
-        title={mode === "create" ? "Add Project" : `Edit · ${initial?.title ?? ""}`}
-        description="Fill in the details below. All uploads and fields sync directly to your database."
-        action={
-          <Link to="/admin/projects" className="text-xs uppercase tracking-[0.2em] link-underline">Back to projects</Link>
-        }
-      />
+      <div className="sticky top-0 bg-background z-20 -mx-6 md:-mx-10 px-6 md:px-10 pt-6 md:pt-10 pb-6 border-b border-border mb-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6">
+          <div>
+            <h1 className="font-serif text-3xl text-foreground">{mode === "create" ? "Add Project" : `Edit · ${initial?.title ?? ""}`}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Fill in the details below. All uploads and fields sync directly to your database.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link to="/admin/projects" className="text-xs uppercase tracking-[0.2em] link-underline mr-2 sm:mr-4">Back</Link>
+            <button 
+              type="button" 
+              onClick={() => handleSave("Draft")}
+              disabled={submitting}
+              className="border border-border px-4 py-2.5 text-xs uppercase tracking-[0.2em] hover:bg-muted transition disabled:opacity-50"
+            >
+              Save Draft
+            </button>
+            <button 
+              type="button" 
+              onClick={() => handleSave("Published")}
+              disabled={submitting}
+              className="bg-foreground text-background px-4 py-2.5 text-xs uppercase tracking-[0.2em] hover:opacity-90 transition disabled:opacity-50"
+            >
+              Publish
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-8">
-          <Section title="Basics">
-            <FieldText 
-              label="Title" 
-              value={title} 
-              onChange={(v) => { setTitle(v); if (mode === "create") setSlug(slugify(v)); }} 
+      <div className="max-w-6xl mx-auto space-y-8 pb-12">
+        <Section title="Basics">
+          <FieldText
+            id="title"
+            label="Title"
+            value={title}
+            onChange={(v) => { setTitle(v); if (mode === "create") setSlug(slugify(v)); }}
+            disabled={submitting}
+            error={errors.title}
+          />
+          <FieldText
+            id="slug"
+            label="Slug"
+            value={slug}
+            onChange={setSlug}
+            hint={`/projects/${slug || "your-slug"}`}
+            disabled={submitting}
+            error={errors.slug}
+          />
+          <div className="grid sm:grid-cols-2 gap-6">
+            <FieldSelect
+              label="Category"
+              options={categories}
+              value={category}
+              onChange={setCategory}
               disabled={submitting}
             />
-            <FieldText 
-              label="Slug" 
-              value={slug} 
-              onChange={setSlug} 
-              hint={`/projects/${slug || "your-slug"}`} 
-              disabled={submitting}
-            />
-            <div className="grid sm:grid-cols-2 gap-6">
-              <FieldSelect 
-                label="Category" 
-                options={categories} 
-                value={category}
-                onChange={setCategory}
-                disabled={submitting}
-              />
-              <div>
-                <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Status</label>
-                <div className="inline-flex border border-border">
-                  {(["Draft", "Published"] as const).map((s) => (
-                    <button 
-                      key={s} 
-                      type="button" 
-                      onClick={() => setStatus(s)} 
-                      disabled={submitting}
-                      className={`px-4 py-2 text-xs uppercase tracking-[0.2em] transition ${status === s ? "bg-foreground text-background" : "hover:bg-muted"}`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+            <div>
+              <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Current Status</label>
+              <div className="py-2">
+                {status.toLowerCase() === "published" ? (
+                  <span className="text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-xs uppercase tracking-[0.15em] font-medium">Published</span>
+                ) : (
+                  <span className="text-amber-600 bg-amber-50 border border-amber-100 px-3 py-1.5 text-xs uppercase tracking-[0.15em] font-medium">Draft</span>
+                )}
               </div>
             </div>
-            
-            <div>
-              <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Short Description</label>
-              <textarea 
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)} 
-                rows={3} 
-                disabled={submitting}
-                className="w-full border border-border bg-background px-3 py-2.5 focus:outline-none focus:border-accent resize-none disabled:opacity-50" 
-              />
-            </div>
-
-            <TipTapEditor value={bodyJson} onChange={setBodyJson} label="Body (Rich Text)" />
-          </Section>
-
-          <Section title="Media">
-            <ImageDropzone label="Cover Image" value={cover} onChange={setCover} bucket="projects" />
-            <MultiImageDropzone label="Gallery Images" value={gallery} onChange={setGallery} bucket="projects" />
-          </Section>
-
-          <Section title="Metadata">
-            <div className="grid sm:grid-cols-2 gap-6">
-              <FieldText label="Client Type" value={clientType} onChange={setClientType} disabled={submitting} />
-              <FieldText label="Location" value={location} onChange={setLocation} disabled={submitting} />
-              <FieldText label="Year" value={year} onChange={setYear} disabled={submitting} />
-              <FieldText label="Area (sqft)" value={area} onChange={setArea} disabled={submitting} />
-            </div>
-          </Section>
-
-          <Section title="Services Used">
-            <div className="grid sm:grid-cols-2 gap-3">
-              {services.map((s) => (
-                <label key={s.id} className="flex items-center gap-3 border border-border px-4 py-3 cursor-pointer hover:border-foreground transition">
-                  <input 
-                    type="checkbox" 
-                    checked={selectedServices.includes(s.title)} 
-                    onChange={() => toggleService(s.title)}
-                    disabled={submitting}
-                    className="accent-foreground" 
-                  />
-                  <span className="text-sm">{s.title}</span>
-                </label>
-              ))}
-            </div>
-          </Section>
-
-          <Section title="SEO">
-            <FieldText label="Meta Title" value={metaTitle} onChange={setMetaTitle} disabled={submitting} />
-            <div>
-              <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Meta Description</label>
-              <textarea 
-                value={metaDescription} 
-                onChange={(e) => setMetaDescription(e.target.value)} 
-                rows={3} 
-                disabled={submitting}
-                className="w-full border border-border bg-background px-3 py-2.5 focus:outline-none focus:border-accent resize-none disabled:opacity-50" 
-              />
-            </div>
-          </Section>
-        </div>
-
-        <aside className="space-y-6">
-          <div className="border border-border bg-card p-6 sticky top-6">
-            <h3 className="font-serif text-lg">Actions</h3>
-            <div className="mt-6 space-y-3">
-              <button 
-                type="button" 
-                onClick={() => handleSave("Draft")}
-                disabled={submitting}
-                className="w-full border border-border py-3 text-xs uppercase tracking-[0.2em] hover:bg-muted transition disabled:opacity-50"
-              >
-                Save as Draft
-              </button>
-              <button 
-                type="button" 
-                onClick={() => handleSave("Published")}
-                disabled={submitting}
-                className="w-full bg-foreground text-background py-3 text-xs uppercase tracking-[0.2em] hover:opacity-90 transition disabled:opacity-50"
-              >
-                Publish Project
-              </button>
-            </div>
-            <p className="mt-6 text-xs text-muted-foreground leading-relaxed">Saving or publishing updates both the database and forces a revalidation of the public website.</p>
           </div>
-        </aside>
+
+          <div>
+            <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Short Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              disabled={submitting}
+              className="w-full border border-border bg-background px-3 py-2.5 focus:outline-none focus:border-accent resize-none disabled:opacity-50"
+            />
+          </div>
+
+          <TipTapEditor value={bodyJson} onChange={setBodyJson} label="Body (Rich Text)" />
+        </Section>
+
+        <Section title="Media">
+          <ImageDropzone id="cover" label="Cover Image" value={cover} onChange={setCover} bucket="projects" error={errors.cover} />
+          <MultiImageDropzone label="Gallery Images" value={gallery} onChange={setGallery} bucket="projects" />
+        </Section>
+
+        <Section title="Metadata">
+          <div className="grid sm:grid-cols-2 gap-6">
+            <FieldText label="Client Type" value={clientType} onChange={setClientType} disabled={submitting} />
+            <FieldText label="Location" value={location} onChange={setLocation} disabled={submitting} />
+            <FieldText label="Year" value={year} onChange={setYear} disabled={submitting} />
+            <FieldText label="Area (sqft)" value={area} onChange={setArea} disabled={submitting} />
+          </div>
+        </Section>
+
+        <Section title="Services Used">
+          <div className="grid sm:grid-cols-2 gap-3">
+            {services.map((s) => (
+              <label key={s.id} className="flex items-center gap-3 border border-border px-4 py-3 cursor-pointer hover:border-foreground transition">
+                <input
+                  type="checkbox"
+                  checked={selectedServices.includes(s.title)}
+                  onChange={() => toggleService(s.title)}
+                  disabled={submitting}
+                  className="accent-foreground"
+                />
+                <span className="text-sm">{s.title}</span>
+              </label>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="SEO">
+          <FieldText label="Meta Title" value={metaTitle} onChange={setMetaTitle} disabled={submitting} />
+          <div>
+            <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Meta Description</label>
+            <textarea
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              rows={3}
+              disabled={submitting}
+              className="w-full border border-border bg-background px-3 py-2.5 focus:outline-none focus:border-accent resize-none disabled:opacity-50"
+            />
+          </div>
+        </Section>
       </div>
     </div>
   );
@@ -306,17 +321,39 @@ export function Section({ title, children }: { title: string; children: React.Re
   );
 }
 
-export function FieldText({ label, value, onChange, hint, disabled }: { label: string; value: string; onChange: (v: string) => void; hint?: string; disabled?: boolean }) {
+export function FieldText({ 
+  label, 
+  value, 
+  onChange, 
+  hint, 
+  disabled, 
+  id, 
+  error 
+}: { 
+  label: string; 
+  value: string; 
+  onChange: (v: string) => void; 
+  hint?: string; 
+  disabled?: boolean;
+  id?: string;
+  error?: string;
+}) {
   return (
     <div>
       <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{label}</label>
       <input
+        id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full border border-border bg-background px-3 py-2.5 focus:outline-none focus:border-accent disabled:opacity-50"
+        className={`w-full border bg-background px-3 py-2.5 focus:outline-none disabled:opacity-50 transition-colors ${
+          error 
+            ? "border-destructive focus:border-destructive" 
+            : "border-border focus:border-accent"
+        }`}
       />
-      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+      {hint && !error && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -325,8 +362,8 @@ export function FieldSelect({ label, options, value, onChange, disabled }: { lab
   return (
     <div>
       <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{label}</label>
-      <select 
-        value={value} 
+      <select
+        value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         className="w-full border border-border bg-background px-3 py-2.5 focus:outline-none focus:border-accent disabled:opacity-50"
@@ -337,7 +374,21 @@ export function FieldSelect({ label, options, value, onChange, disabled }: { lab
   );
 }
 
-export function ImageDropzone({ label, value, onChange, bucket }: { label: string; value?: string; onChange: (v?: string) => void; bucket: string }) {
+export function ImageDropzone({ 
+  label, 
+  value, 
+  onChange, 
+  bucket,
+  id,
+  error
+}: { 
+  label: string; 
+  value?: string; 
+  onChange: (v?: string) => void; 
+  bucket: string;
+  id?: string;
+  error?: string;
+}) {
   const [uploading, setUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -360,21 +411,22 @@ export function ImageDropzone({ label, value, onChange, bucket }: { label: strin
   };
 
   return (
-    <div>
+    <div id={id}>
       <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{label}</label>
       {value ? (
-        <div className="relative h-64 bg-muted border border-border overflow-hidden">
+        <div className={`relative h-64 bg-muted border overflow-hidden ${error ? "border-destructive" : "border-border"}`}>
           <img src={value} alt="" className="h-full w-full object-cover" />
           <button type="button" onClick={() => onChange(undefined)} className="absolute top-2 right-2 bg-background/80 p-1.5"><X className="h-4 w-4" /></button>
         </div>
       ) : (
-        <label className="relative cursor-pointer w-full border border-dashed border-border h-48 flex flex-col items-center justify-center text-muted-foreground hover:border-foreground hover:text-foreground transition">
+        <label className={`relative cursor-pointer w-full border border-dashed h-48 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition ${error ? "border-destructive bg-destructive/5 hover:border-destructive text-destructive" : "border-border hover:border-foreground"}`}>
           <input type="file" accept="image/*" onChange={handleFileChange} className="sr-only" disabled={uploading} />
           <UploadCloud className="h-7 w-7" strokeWidth={1.25} />
           <p className="mt-3 text-sm">{uploading ? "Uploading..." : "Click to upload image"}</p>
           <p className="text-xs text-muted-foreground/70 mt-1">PNG, JPG up to 10MB</p>
         </label>
       )}
+      {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
     </div>
   );
 }
@@ -411,28 +463,28 @@ export function MultiImageDropzone({ label, value, onChange, bucket }: { label: 
   return (
     <div>
       <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{label}</label>
-      
+
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="gallery-images" direction="horizontal">
           {(provided) => (
-            <div 
-              {...provided.droppableProps} 
+            <div
+              {...provided.droppableProps}
               ref={provided.innerRef}
               className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
             >
               {value.map((src, i) => (
                 <Draggable key={src} draggableId={src} index={i}>
                   {(provided, snapshot) => (
-                    <div 
+                    <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                       className={`relative h-28 bg-muted border border-border overflow-hidden cursor-grab active:cursor-grabbing ${snapshot.isDragging ? "shadow-lg border-foreground scale-105 z-50" : ""}`}
                     >
                       <img src={src} alt="" className="h-full w-full object-cover select-none pointer-events-none" />
-                      <button 
-                        type="button" 
-                        onClick={(e) => { e.stopPropagation(); onChange(value.filter((_, k) => k !== i)); }} 
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onChange(value.filter((_, k) => k !== i)); }}
                         className="absolute top-1 right-1 bg-background/80 p-1 border border-border z-10"
                       >
                         <X className="h-3.5 w-3.5 text-foreground hover:scale-105 transition" />

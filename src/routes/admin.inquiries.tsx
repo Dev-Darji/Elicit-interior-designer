@@ -178,13 +178,13 @@ function InquiriesAdmin() {
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setOpen(null)}>
-          <aside className="absolute right-0 top-0 h-full w-full max-w-lg bg-background border-l border-border overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="fixed inset-0 z-50 bg-black/40 flex justify-end" onClick={() => setOpen(null)}>
+          <aside className="h-full w-full max-w-lg bg-background border-l border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-border bg-background">
               <h3 className="font-serif text-xl">Inquiry Details</h3>
               <button onClick={() => setOpen(null)} aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
-            <div className="p-6 space-y-5 text-sm">
+            <div className="flex-1 overflow-y-auto p-6 space-y-5 text-sm">
               <Detail label="Name" value={open.name} />
               <Detail label="Email" value={open.email} />
               <Detail label="Phone" value={open.phone} />

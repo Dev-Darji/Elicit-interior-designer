@@ -58,6 +58,7 @@ function TeamAdmin() {
   const [bio, setBio] = useState("");
   const [photo, setPhoto] = useState<string | undefined>("");
   const [visible, setVisible] = useState(true);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setItems(initialTeam);
@@ -65,6 +66,7 @@ function TeamAdmin() {
 
   useEffect(() => {
     if (!editing) return;
+    setErrors({});
 
     if (editing === "new") {
       setName("");
@@ -120,14 +122,36 @@ function TeamAdmin() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Perform validation
+    const newErrors: Record<string, string> = {};
     if (!name.trim()) {
-      toast.error("Name is required");
-      return;
+      newErrors.name = "Name is required";
     }
     if (!role.trim()) {
-      toast.error("Role is required");
+      newErrors.role = "Role is required";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Find first error and scroll to it
+      const firstErrorKey = Object.keys(newErrors)[0];
+      setTimeout(() => {
+        const element = document.getElementById(firstErrorKey);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          const input = element.tagName === "INPUT" || element.tagName === "TEXTAREA"
+            ? element
+            : element.querySelector("input, textarea, select, button");
+          if (input) {
+            (input as HTMLElement).focus();
+          }
+        }
+      }, 50);
       return;
     }
+
+    setErrors({});
 
     const memberData = {
       name,
@@ -268,15 +292,15 @@ function TeamAdmin() {
 
       {editing && (
         <div className="fixed inset-0 z-50 bg-black/40 flex justify-end" onClick={() => setEditing(null)}>
-          <aside className="h-full w-full max-w-xl bg-background border-l border-border overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-border">
+          <aside className="h-full w-full max-w-xl bg-background border-l border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-border bg-background">
               <h3 className="font-serif text-xl">{editing === "new" ? "Add Member" : "Edit Member"}</h3>
               <button onClick={() => setEditing(null)} aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
-            <form className="p-6 space-y-6" onSubmit={handleSave}>
+            <form className="flex-1 overflow-y-auto p-6 space-y-6" onSubmit={handleSave}>
               <Section title="Member">
-                <FieldText label="Name" value={name} onChange={setName} />
-                <FieldText label="Role" value={role} onChange={setRole} />
+                <FieldText id="name" label="Name" value={name} onChange={setName} error={errors.name} />
+                <FieldText id="role" label="Role" value={role} onChange={setRole} error={errors.role} />
                 <div>
                   <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Bio</label>
                   <textarea 

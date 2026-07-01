@@ -60,6 +60,7 @@ function TestimonialsAdmin() {
   const [rating, setRating] = useState(5);
   const [photo, setPhoto] = useState<string | undefined>("");
   const [published, setPublished] = useState(true);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setItems(initialTestimonials);
@@ -67,6 +68,7 @@ function TestimonialsAdmin() {
 
   useEffect(() => {
     if (!editing) return;
+    setErrors({});
 
     if (editing === "new") {
       setClientName("");
@@ -147,14 +149,36 @@ function TestimonialsAdmin() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Perform validation
+    const newErrors: Record<string, string> = {};
     if (!clientName.trim()) {
-      toast.error("Client Name is required");
-      return;
+      newErrors.clientName = "Client Name is required";
     }
     if (!quote.trim()) {
-      toast.error("Quote is required");
+      newErrors.quote = "Quote is required";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Find first error and scroll to it
+      const firstErrorKey = Object.keys(newErrors)[0];
+      setTimeout(() => {
+        const element = document.getElementById(firstErrorKey);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          const input = element.tagName === "INPUT" || element.tagName === "TEXTAREA"
+            ? element
+            : element.querySelector("input, textarea, select, button");
+          if (input) {
+            (input as HTMLElement).focus();
+          }
+        }
+      }, 50);
       return;
     }
+
+    setErrors({});
 
     const testimonialData = {
       client_name: clientName,
@@ -307,23 +331,29 @@ function TestimonialsAdmin() {
 
       {editing && (
         <div className="fixed inset-0 z-50 bg-black/40 flex justify-end" onClick={() => setEditing(null)}>
-          <aside className="h-full w-full max-w-xl bg-background border-l border-border overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-border">
+          <aside className="h-full w-full max-w-xl bg-background border-l border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-border bg-background">
               <h3 className="font-serif text-xl">{editing === "new" ? "Add Testimonial" : "Edit Testimonial"}</h3>
               <button onClick={() => setEditing(null)} aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
-            <form className="p-6 space-y-6" onSubmit={handleSave}>
+            <form className="flex-1 overflow-y-auto p-6 space-y-6" onSubmit={handleSave}>
               <Section title="Testimonial">
-                <FieldText label="Client Name" value={clientName} onChange={setClientName} />
+                <FieldText id="clientName" label="Client Name" value={clientName} onChange={setClientName} error={errors.clientName} />
                 <FieldText label="Project Type" value={projectType} onChange={setProjectType} />
                 <div>
                   <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Quote</label>
                   <textarea 
+                    id="quote"
                     value={quote} 
                     onChange={(e) => setQuote(e.target.value)} 
                     rows={5} 
-                    className="w-full border border-border bg-background px-3 py-2.5 focus:outline-none focus:border-accent resize-none" 
+                    className={`w-full border bg-background px-3 py-2.5 focus:outline-none resize-none transition-colors ${
+                      errors.quote 
+                        ? "border-destructive focus:border-destructive" 
+                        : "border-border focus:border-accent"
+                    }`}
                   />
+                  {errors.quote && <p className="mt-1 text-xs text-destructive">{errors.quote}</p>}
                 </div>
                 <div>
                   <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Rating</label>

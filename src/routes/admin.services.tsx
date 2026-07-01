@@ -69,6 +69,7 @@ function ServicesAdmin() {
   const [selectedIcon, setSelectedIcon] = useState("Sparkles");
   const [cover, setCover] = useState<string | undefined>("");
   const [visible, setVisible] = useState(true);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setItems(initialServices);
@@ -76,6 +77,7 @@ function ServicesAdmin() {
 
   useEffect(() => {
     if (!editing) return;
+    setErrors({});
 
     if (editing === "new") {
       setTitle("");
@@ -162,10 +164,33 @@ function ServicesAdmin() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Perform validation
+    const newErrors: Record<string, string> = {};
     if (!title.trim()) {
-      toast.error("Title is required");
+      newErrors.title = "Title is required";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Find first error and scroll to it
+      const firstErrorKey = Object.keys(newErrors)[0];
+      setTimeout(() => {
+        const element = document.getElementById(firstErrorKey);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          const input = element.tagName === "INPUT" || element.tagName === "TEXTAREA"
+            ? element
+            : element.querySelector("input, textarea, select, button");
+          if (input) {
+            (input as HTMLElement).focus();
+          }
+        }
+      }, 50);
       return;
     }
+
+    setErrors({});
 
     const serviceData = {
       title,
@@ -314,14 +339,14 @@ function ServicesAdmin() {
 
       {editing && (
         <div className="fixed inset-0 z-50 bg-black/40 flex justify-end" onClick={() => setEditing(null)}>
-          <aside className="h-full w-full max-w-2xl bg-background border-l border-border overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-border">
+          <aside className="h-full w-full max-w-2xl bg-background border-l border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-border bg-background">
               <h3 className="font-serif text-xl">{editing === "new" ? "Add Service" : "Edit Service"}</h3>
               <button onClick={() => setEditing(null)} aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
-            <form className="p-6 space-y-6" onSubmit={handleSave}>
+            <form className="flex-1 overflow-y-auto p-6 space-y-6" onSubmit={handleSave}>
               <Section title="Service">
-                <FieldText label="Title" value={title} onChange={setTitle} />
+                <FieldText id="title" label="Title" value={title} onChange={setTitle} error={errors.title} />
                 <div>
                   <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Short Description</label>
                   <textarea 

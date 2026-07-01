@@ -41,7 +41,7 @@ function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground relative">
+    <div className="h-screen flex bg-background text-foreground overflow-hidden relative">
       {/* Desktop Sidebar */}
       <AdminSidebar />
 
@@ -121,7 +121,7 @@ function AdminLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between border-b border-border bg-sidebar text-sidebar-foreground px-6 py-4">
           <p className="font-serif text-lg">Elicit — Admin</p>
@@ -133,7 +133,7 @@ function AdminLayout() {
             <Menu className="h-6 w-6" />
           </button>
         </header>
-        <main className="flex-1 p-6 md:p-10 overflow-x-auto">
+        <main className="flex-1 px-6 md:px-10 pb-6 md:pb-10 pt-0 overflow-y-auto">
           <Outlet />
         </main>
       </div>
