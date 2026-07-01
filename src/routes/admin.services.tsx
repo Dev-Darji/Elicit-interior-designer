@@ -268,27 +268,34 @@ function ServicesAdmin() {
                       <li 
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`border border-border bg-card flex items-center gap-4 p-4 ${snapshot.isDragging ? "bg-muted shadow-md" : ""}`}
+                        className={`border border-border bg-card flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 ${snapshot.isDragging ? "bg-muted shadow-md" : ""}`}
                       >
-                        <span {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
-                          <GripVertical className="h-4 w-4" />
-                        </span>
-                        <IconComponent className="h-5 w-5 text-accent shrink-0" strokeWidth={1.25} />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-serif text-lg">{s.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{s.short}</p>
+                        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                          <span {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                            <GripVertical className="h-4 w-4" />
+                          </span>
+                          <IconComponent className="h-5 w-5 text-accent shrink-0" strokeWidth={1.25} />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-serif text-lg">{s.title}</p>
+                            <p className="text-xs text-muted-foreground truncate">{s.short}</p>
+                          </div>
                         </div>
-                        <label className="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-                          <input 
-                            type="checkbox" 
-                            checked={s.visible} 
-                            onChange={() => handleToggleVisibility(s.id, s.visible)}
-                            className="accent-foreground" 
-                          />
-                          Visible
-                        </label>
-                        <button onClick={() => setEditing(s.id)} className="p-2 hover:bg-muted" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
-                        <button onClick={() => setConfirmDeleteId(s.id)} className="p-2 hover:bg-muted text-destructive" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
+                        
+                        <div className="flex items-center justify-between sm:justify-end gap-4 border-t border-border/40 pt-3 sm:pt-0 sm:border-0">
+                          <label className="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+                            <input 
+                              type="checkbox" 
+                              checked={s.visible} 
+                              onChange={() => handleToggleVisibility(s.id, s.visible)}
+                              className="accent-foreground" 
+                            />
+                            Visible
+                          </label>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => setEditing(s.id)} className="p-2 hover:bg-muted" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
+                            <button onClick={() => setConfirmDeleteId(s.id)} className="p-2 hover:bg-muted text-destructive" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
+                          </div>
+                        </div>
                       </li>
                     )}
                   </Draggable>

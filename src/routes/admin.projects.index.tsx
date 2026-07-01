@@ -147,7 +147,7 @@ function ProjectsAdmin() {
         }
       />
 
-      <div className="border border-border bg-card">
+      <div className="border border-border bg-card overflow-x-auto w-full">
         <DragDropContext onDragEnd={handleDragEnd}>
           <table className="w-full text-sm">
             <thead className="text-xs uppercase tracking-[0.2em] text-muted-foreground">

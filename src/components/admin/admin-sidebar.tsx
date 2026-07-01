@@ -2,7 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { LayoutDashboard, FolderKanban, Inbox, Sparkles, Users, MessageSquareQuote, BookOpen, Settings, LogOut } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
-const navItems = [
+export const navItems = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/projects", label: "Projects", icon: FolderKanban },
   { to: "/admin/inquiries", label: "Inquiries", icon: Inbox },

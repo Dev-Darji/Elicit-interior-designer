@@ -254,35 +254,42 @@ function TestimonialsAdmin() {
                     <div 
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className={`p-5 flex items-center gap-4 hover:bg-background/50 ${snapshot.isDragging ? "bg-muted shadow-md" : ""}`}
+                      className={`p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 hover:bg-background/50 ${snapshot.isDragging ? "bg-muted shadow-md" : ""}`}
                     >
-                      <span 
-                        {...provided.dragHandleProps} 
-                        className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground mr-1"
-                      >
-                        <GripVertical className="h-4 w-4" />
-                      </span>
-                      <img src={t.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'} alt="" className="h-12 w-12 rounded-full object-cover bg-muted shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-serif text-base">{t.name}</p>
-                        <p className="text-xs text-muted-foreground">{t.projectType}</p>
+                      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                        <span 
+                          {...provided.dragHandleProps} 
+                          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground mr-1 shrink-0"
+                        >
+                          <GripVertical className="h-4 w-4" />
+                        </span>
+                        <img src={t.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'} alt="" className="h-12 w-12 rounded-full object-cover bg-muted shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-serif text-base">{t.name}</p>
+                          <p className="text-xs text-muted-foreground">{t.projectType}</p>
+                        </div>
                       </div>
-                      <div className="flex text-accent shrink-0 hidden sm:flex">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`h-3.5 w-3.5 ${i < t.rating ? "fill-current text-accent" : "text-border"}`} />
-                        ))}
+                      
+                      <div className="flex items-center justify-between sm:justify-end gap-4 border-t border-border/40 pt-3 sm:pt-0 sm:border-0">
+                        <div className="flex text-accent shrink-0">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={`h-3.5 w-3.5 ${i < t.rating ? "fill-current text-accent" : "text-border"}`} />
+                          ))}
+                        </div>
+                        <label className="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none shrink-0">
+                          <input 
+                            type="checkbox" 
+                            checked={t.published} 
+                            onChange={() => handleTogglePublished(t.id, t.published)}
+                            className="accent-foreground" 
+                          />
+                          Published
+                        </label>
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => setEditing(t.id)} className="p-2 hover:bg-muted" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
+                          <button onClick={() => setConfirmDeleteId(t.id)} className="p-2 hover:bg-muted text-destructive" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
+                        </div>
                       </div>
-                      <label className="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none shrink-0 mr-4">
-                        <input 
-                          type="checkbox" 
-                          checked={t.published} 
-                          onChange={() => handleTogglePublished(t.id, t.published)}
-                          className="accent-foreground" 
-                        />
-                        Published
-                      </label>
-                      <button onClick={() => setEditing(t.id)} className="p-2 hover:bg-muted" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
-                      <button onClick={() => setConfirmDeleteId(t.id)} className="p-2 hover:bg-muted text-destructive" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   )}
                 </Draggable>
